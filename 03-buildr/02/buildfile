@@ -1,0 +1,49 @@
+#
+
+require 'buildr'
+ 
+ENV['JAVA_HOME'] = "c:/Java/jdk1.5.0"
+
+repositories.local = "c:/Work/maven-repository"
+
+VERSION_NUMBER = '1.0'
+ 
+AXIS2 = 'org.apache.axis2:axis2:jar:1.2'
+AXIOM  = group('axiom-api', 'axiom-impl', 'axiom-dom',
+  :under=>'org.apache.ws.commons.axiom', :version=>'1.2.4')
+AXIS_OF_WS = [AXIOM, AXIS2]
+OPENJPA = ['org.apache.openjpa:openjpa-all:jar:0.9.7',
+  'net.sourceforge.serp:serp:jar:1.12.0']
+ 
+repositories.remote << 'http://www.ibiblio.org/maven2/'
+ 
+desc 'Code. Build. ??? Profit!'
+define 'killer-app' do
+ 
+  project.version = VERSION_NUMBER
+  project.group = 'acme'
+  manifest['Copyright'] = 'Acme Inc (C) 2007'
+  compile.options.target = '1.5'
+
+  desc 'Abstract classes and interfaces'
+  define 'teh-api' do
+    package :jar
+  end
+
+  desc 'All those implementation details'
+  define 'teh-impl' do
+    compile.with AXIS_OF_WS, OPENJPA
+    compile { open_jpa_enhance }
+    package :jar
+  end
+
+  desc 'What our users see'
+  define 'la-web' do
+    test.using AXIS_OF_WS
+    package(:war).with :libs=>projects('teh-api', 'teh-impl')
+  end
+
+  javadoc projects
+  package :javadoc
+
+end
