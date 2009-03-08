@@ -1,0 +1,4 @@
+http://www.tomtenthij.co.uk/2008/1/25/rspec-plain-text-story-runner-on-a-fresh-rails-app
+
+ruby stories/login_story.rb
+
