@@ -1,0 +1,22 @@
+In order to <deliver some business benefit>
+  <these people>
+  will need <these features>
+
+Feature: title
+  In order to [Business Value]
+  As a [Role]
+  I want to [Some Action] (feature)
+
+  Scenario: title
+    Given [Context]
+    When I do [Action]
+    Then I should see [Outcome]
+
+  Scenario: title
+    Given [Context]
+    And [More Context]
+    When I do [Action]
+    And [Other Action]
+    Then I should see [Outcome]
+    But I should not see [Outcome]
+
