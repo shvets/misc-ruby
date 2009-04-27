@@ -6,6 +6,14 @@ require 'yaml'
 require 'rutils'
 require 'iconv'
 
+class String
+  def blank?
+    s_i = self.dup
+
+    s_i == nil or s_i.strip.size == 0
+  end
+end
+
 class Spider
   LINKS_FILE_NAME = 'links.yml'
 
@@ -22,16 +30,15 @@ class Spider
     238 => -97, 239 => -97, 240 => -97,
     241 => -82, 242 => -98, 243 => -98, 244 => -98, 245 => -98, 246 => -112, 247 => -117,
     248 => 0, 249 => 0, 250 => -115, 
-    251 => -99, 252 => -95, 253 => 0, 254 => -103
+    251 => -99, 252 => -95, 253 => -100, 254 => -103
   }
 
 
   TABLE = {
     160 => "a", 161 => "b", 162 => "v", 163 => "g", 164 => "d", 165 => "e", 166 => "zh", 167 => "z",
     168 =>  "i", 169 => "y", 170 => "k", 171 => "l", 172 => "m", 173 => "n", 174 => "o", 175 => "p",
-    177 => "r",
-    225 => "s", 226 => "t", 227 => "u", 228 => "f", 229 => "h", 230 => "c", 231 => "ch", 232 => "sh", 233 => "s'h", 
-    234 => "''", 235 => "yi", 236 => "'", 237 => "ye", 238 => "yu", 239 => "ya",
+    224 => "r", 225 => "s", 226 => "t", 227 => "u", 228 => "f", 229 => "h", 230 => "c", 231 => "ch", 
+    232 => "sh", 233 => "s'h", 234 => "''", 235 => "yi", 236 => "'", 237 => "ye", 238 => "yu", 239 => "ya",
     '' => "yo",
     '' => "YO",                                                 
     128 => "A", 129 => "B", 130 => "V", 131 => "G", 132 => "D", 133 => "E", 134 => "Zh", 135 => "Z", 
@@ -52,27 +59,41 @@ class Spider
     build_links_file
 
     begin
-      links = open(LINKS_FILE_NAME) {|f| YAML.load(f) }
+      links = load
 
       links.each do |link|
-        #load_files_from_page(link[0]) unless link[1]
+        key = link[0]
+        values = link[1]
+        name = values[:name]
+        url = values[:url]
+        visited = values[:visited]
 
-        #links[link[0]] = true
+        # create "name" folder
+
+        load_files_from_page(url) unless visited
+
+        values[:visited] = true
       end
     ensure
-      save_links links
+      save links
     end
   end
+
+  def load
+    open(LINKS_FILE_NAME) {|f| YAML.load(f) }
+  end
+
+  def save links
+    open(LINKS_FILE_NAME, "w") {|f| YAML.dump(links, f) }
+  end
+
+  private 
 
   def build_links_file
     unless File::exist?(LINKS_FILE_NAME)
       page = @agent.get(@url)
 
       links = {}
-
-      #page.links.each do |link|
-      #  links[link.href] = false if link.href =~ /^album.phtml/
-      #end 
 
       table = nil
       page.root.xpath('//html/body/table').each_with_index do |t, index|
@@ -81,21 +102,46 @@ class Spider
       end
 
       table.xpath('//tr').each do |tr|
-        title, name = find_album_title_and_name(tr.children.entries)
+        name, url = find_album_name_and_url(tr.children.entries)
 
-        break if name.nil?
-
-        puts title
-        puts name
+        unless name.nil?
+          if url =~ /^album.phtml/
+            links[url] = {:visited => false, :name => name, :url => url}
+          end
+        end
       end
 
-
-      save_links links
+      save links
     end
   end
 
-  def save_links links
-    open(LINKS_FILE_NAME, "w") {|f| YAML.dump(links, f) }
+  def find_album_name_and_url list
+    td = list[2]
+
+    return ['', ''] if td.nil?
+
+    text = td.children.first.to_s
+
+    return ['', ''] if text.blank?
+
+    re = /\<a href="(.*)">(.*)\<\/a>/
+
+    result = text.scan(re)[0]
+
+    return ['', ''] if result.nil?
+
+    url = result[0]
+    text = result[1]
+
+    name = ''
+
+    text.chars.each do |ch|
+#      puts "#{ch} -- #{ch[0]}"                             
+   
+      name << convert_char(ch) rescue puts "error: #{ch}"
+    end
+
+    return [name, url]
   end
 
   def load_files_from_page page_url
@@ -105,46 +151,23 @@ class Spider
 
     i = 0
     page.root.xpath('//html/body/table/tr').each do |tr|
-      title, name = find_song_title_and_name(tr.children.entries)
+      name, url = find_song_name_and_url(tr.children.entries)
 
-      break if name.nil?
+      break if url.nil?
 
-      puts title
       puts name
+      puts url
 
-      title.gsub!("\"", "_")
-      File.new("1/" + title + '.mp3', "w")
+      name.gsub!("'", "_")
+      name.gsub!("\"", "_")
+      File.new("1/" + name + '.mp3', "w")
 
       i = i + 1
       break if i == 2
     end
   end
 
-  def find_album_title_and_name list
-    td = list[3]
-
-    return ['', ''] if td.nil?
-
-    text = td.children.first.to_s
-
-puts "text: #{td.children.first}"
-    title = ''
-    name = ''
-
-    #text.chars.each_with_index do |ch, index|
-    #  puts "#{ch} -- #{ch[0]}"                             
-   
-    #  title << convert_char(ch)
-    #end
-                      
-#    re = /\<a href="(.*)"\><img/
-#<td><a href="album.phtml?id=44">ñ¦+TL++-T ô¦¦+LTã¦, "¨+L+ã", 1979 (LP, º60 13241, 1979)</a></td>
-#    name = text.scan(re2)[0][0]
-
-    return [title, name]
-  end
-
-  def find_song_title_and_name list
+  def find_song_name_and_url list
     td1 = list[2]
     td2 = list[6]
 
@@ -155,18 +178,18 @@ puts "text: #{td.children.first}"
 
     text2 = td2.children.first.to_s
 
-    title = ''
+    name = ''
 
     text1.chars.each_with_index do |ch, index|
-      puts "#{ch} -- #{ch[0]}"                             
+      #puts "#{ch} -- #{ch[0]}"                             
    
-      title << convert_char(ch)
+      name << convert_char(ch)
     end
                       
     re2 = /\<a href="(.*)"\><img/
-    name = text2.scan(re2)[0][0]
+    url = text2.scan(re2)[0][0]
 
-    return [title, name]
+    return [name, url]
   end
 
   def convert_char ch
@@ -189,7 +212,6 @@ puts "text: #{td.children.first}"
     new_ch
   end
 end
-
 
 url = "http://mlmusic.38th.ru"
 
