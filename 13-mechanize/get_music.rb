@@ -109,14 +109,6 @@ class Spider
     url = result[0]
     text = result[1]
 
-    #name = ''
-
-    #text.chars.each do |ch|
-#      puts "#{ch} -- #{ch[0]}"                             
-   
-    #  name << convert_char(ch) rescue puts "error: #{ch}"
-    #end
-
     name = convert text
 
     return [name, url]

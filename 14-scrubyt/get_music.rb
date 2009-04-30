@@ -102,11 +102,9 @@ class Spider
         url = values[:url]
         visited = values[:visited]
 
-        # create "name" folder
+        load_files_from_page(name, url) unless visited
 
-        #load_files_from_page(url) unless visited
-
-        values[:visited] = true
+        #values[:visited] = true
       end
     ensure
       save links
@@ -153,7 +151,33 @@ class Spider
 
       save links
     end
+  end
 
+  def load_files_from_page dir_name, page_url
+    data = Scrubyt::Extractor.define do
+      fetch page_url
+
+      entry '//html/body/table[1]/tr' do
+        name "/td[2]"
+        url "/td[4]", :format_output => lambda {|x| p x; x }
+      end
+    end
+
+    p data.to_xml
+
+    #data.to_hash.each do |entry|
+    #  p entry
+      #links[entry[:url]] = {:visited => false, :name => convert(entry[:name]), :url => entry[:url]}
+    #  retrieve_file dir_name, correct_name(convert(entry[:name]) + '.mp3') unless entry[:name].nil?
+    #end
+  end
+
+  def retrieve_file dir_name, file_name
+    File.new("1/" + file_name, "w")
+  end
+
+  def correct_name name
+    name.gsub("'", "_").gsub("\"", "_")
   end
 end
 
