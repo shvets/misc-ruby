@@ -158,18 +158,18 @@ class Spider
       fetch page_url
 
       entry '//html/body/table[1]/tr' do
-        name "/td[2]"
-        url "/td[4]", :format_output => lambda {|x| p x; x }
+#        name "/td[2]"
+#        url "/td[4]"
       end
     end
 
-    p data.to_xml
+   p data.to_xml
 
-    #data.to_hash.each do |entry|
-    #  p entry
+    data.to_hash.each do |entry|
+     # p convert(entry[:name])
       #links[entry[:url]] = {:visited => false, :name => convert(entry[:name]), :url => entry[:url]}
     #  retrieve_file dir_name, correct_name(convert(entry[:name]) + '.mp3') unless entry[:name].nil?
-    #end
+    end
   end
 
   def retrieve_file dir_name, file_name

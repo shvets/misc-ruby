@@ -4,7 +4,7 @@ require 'rubygems'
 require 'mechanize'
 require 'yaml'
 require 'rutils'
-require 'iconv'
+require 'fileutils'
 
 require 'russify'
 
@@ -22,6 +22,7 @@ class Spider
 
   LINKS_FILE_NAME = 'links.yml'
 
+  OUTPUT_DIR = "results"
 
   def initialize url
     @url = url
@@ -44,11 +45,9 @@ class Spider
         url = values[:url]
         visited = values[:visited]
 
-        # create "name" folder
+        load_files_from_page(name, url) unless visited
 
-        load_files_from_page(url) unless visited
-
-        values[:visited] = true
+        #values[:visited] = true
       end
     ensure
       save links
@@ -114,7 +113,7 @@ class Spider
     return [name, url]
   end
 
-  def load_files_from_page page_url
+  def load_files_from_page dir_name, page_url
     #puts @url + "/" + page_url
 
     page = @agent.get(@url + "/" + page_url)
@@ -128,13 +127,20 @@ class Spider
       puts name
       puts url
 
-      name.gsub!("'", "_")
-      name.gsub!("\"", "_")
-      File.new("1/" + name + '.mp3', "w")
+      retrieve_file(OUTPUT_DIR + "/" + correct_name(dir_name), correct_name(convert(name)) + '.mp3') unless name.nil?
 
       i = i + 1
       break if i == 2
     end
+  end
+
+  def retrieve_file dir_name, file_name
+    FileUtils.makedirs(dir_name) unless File.exist?(dir_name)
+    File.new(dir_name + "/" + file_name, "w")
+  end
+
+  def correct_name name
+    name.gsub(/'\s|\"|\[|\]|\//, "_")[0..35]
   end
 
   def find_song_name_and_url list
@@ -148,13 +154,7 @@ class Spider
 
     text2 = td2.children.first.to_s
 
-    name = ''
-
-    text1.chars.each_with_index do |ch, index|
-      #puts "#{ch} -- #{ch[0]}"                             
-   
-      name << convert_char(ch)
-    end
+    name = convert(text1)
                       
     re2 = /\<a href="(.*)"\><img/
     url = text2.scan(re2)[0][0]
