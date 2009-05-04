@@ -140,7 +140,7 @@ class Spider
   end
 
   def correct_name name
-    name.gsub(/'\s|\"|\[|\]|\//, "_")[0..35]
+    name.gsub(/'\s|\"|\[|\]|\//, "_")
   end
 
   def find_song_name_and_url list
