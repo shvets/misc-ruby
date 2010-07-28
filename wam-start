@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'iterm_window'
+
+ItermWindow.open do
+  
+  open_tab :webaccount_mobile_service_stub do
+    set_title "WAM service-stub"
+    write "cd ~/work/webaccount-mobile-r01/src/service-stub"
+    write "echo mvn jetty:run"
+  end
+
+  open_tab :webaccount_mobile_web_ui do
+    set_title "WAM web-ui"
+    write "cd ~/work/webaccount-mobile-r01/src/web-ui"
+    write "echo mvnDebug45 jetty:run"
+  end
+  
+  open_tab :webaccount_mobile_selenium_server do
+    set_title "WAM Selenium Server"
+    write "cd ~/work/webaccount-mobile-r01/src/web-ui"
+    write "echo mvn selenium:start-server"
+  end
+
+  open_tab :webaccount_mobile_root do
+    set_title "WAM Home"
+    write "cd ~/work/webaccount-mobile-r01/src"
+  end
+  
+  webaccount_mobile_root.select
+  
+end

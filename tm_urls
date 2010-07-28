@@ -1,0 +1,46 @@
+#!/Users/oshvets/.rvm/rubies/ruby-1.8.7-p299/bin/ruby -ws
+#
+# textmate_urls – by Luke Melia
+#
+# usage:
+# test.rb | textmate_urls
+
+############################################################
+
+class TextmateUrls
+
+  def self.urlize
+    trap 'INT' do exit 1 end
+    TextmateUrls.new.urlize
+  end
+
+  ##
+  # Scans input looking for stacktrace lines and rewrite them with textmate urls in the output
+
+  def urlize(input=ARGF, output=$stdout)
+    cwd = `pwd`.chomp #remember the current working directory to rewrite relative paths in the stacktrace
+    old_sync = output.sync
+    output.sync = true
+
+    while line = input.gets
+      case line
+        when %r{(^[a-z_]+\([A-Za-z]+\)) \[\.?(/?.*):(\d+)\]:}
+          line = "#{$1}\ntxmt://open?url=file://#{File.join(cwd, $2)}&line=#{$3}"
+          line.gsub!(%r|/[^/]+/\.\./|, '/')
+      
+        when %r{^\s*(\[?)(/.+):(\d+):(.*)$} # a stacktrace line
+          line = "#{$1}txmt://open?url=file://#{$2}&line=#{$3} #{$4}"
+          line.gsub!(%r|/[^/]+/\.\./|, '/')
+        when %r{^\s*(\[?)\.?(/?.+):(\d+):(in .*)$} # a stacktrace line with a relative file reference
+          line = "#{$1}txmt://open?url=file://#{File.join(cwd, $2)}&line=#{$3} #{$4}"
+          line.gsub!(%r|/[^/]+/\.\./|, '/')
+      end
+  
+      output.puts line
+    end
+
+    output.sync = old_sync
+  end
+end
+
+TextmateUrls.urlize
