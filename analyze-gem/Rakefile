@@ -1,0 +1,73 @@
+# Rakefile for google-translate
+
+require 'rubygems' unless RUBY_VERSION =~ /1.9.*/
+
+#require 'rake/gempackagetask'
+require 'rake/testtask'
+#require 'rspec/core/rake_task'
+#require 'rake/rdoctask'
+#require 'rcov/rcovtask'
+
+task :default => :gemspec
+
+begin
+  require 'bundler'
+
+  begin
+    require 'jeweler'
+
+    Jeweler::Tasks.new do |gemspec|
+      gemspec.name = "analyze-gem"
+      gemspec.summary = "Displays dependencies for specified gem based on sources (Summary)."
+      gemspec.description = "Displays dependencies for specified gem based on sources."
+      gemspec.email = "alexander.shvets@gmail.com"
+      gemspec.homepage = "http://github.com/shvets/analyze-gem"
+      gemspec.authors = ["Alexander Shvets"]
+      gemspec.files = FileList["CHANGES", "analyze-gem.gemspec", "Rakefile", "README", "VERSION", "lib/**/*"]
+      gemspec.requirements = ["none"]
+      gemspec.bindir = "bin"
+
+      gemspec.add_bundler_dependencies
+
+#    s.test_files = FileList["test/**/*_test.rb"]
+#    s.add_dependency 'launchy', '~> 0.3.5'
+#    s.add_development_dependency 'mocha', '~> 0.9.5'
+#
+    end
+  rescue LoadError
+    puts "Jeweler not available. Install it s with: [sudo] gem install jeweler"
+  end
+rescue LoadError
+  puts "Bundler not available. Install it s with: [sudo] gem install bundler"
+end
+
+desc "Release the gem"
+task :"release:gem" do
+  %x(
+      rake gemspec
+      rake build
+      rake install
+      git add .
+  )
+  puts "Commit message:"
+  message = STDIN.gets
+
+  version = "#{File.open(File::dirname(__FILE__) + "/VERSION").readlines().first}"
+
+  %x(
+    git commit -m "#{message}"
+
+    git push origin master
+
+    gem push pkg/analyze-gem-#{version}.gem
+  )
+end
+
+
+Rake::TestTask.new do |t|
+  t.libs << 'lib'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = false
+end
+
+task :default => :test

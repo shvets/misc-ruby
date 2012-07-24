@@ -1,0 +1,10 @@
+ffmpeg -i rtsp://212.113.49.39/h/3135033-20100308053003-600-5281646.wmv -acodec wmav2 -vcodec wmv3 -y test.flv
+ffmpeg -i /home/dasbooter/2nd_storage/movie.avi -acodec wmav1 -vcodec wmv2 -ac 2 -qscale 3 /home/dasbooter/1rst_storage/visual_media/movie.wmv
+
+
+ffmpeg -i rtmp://localhost/live/testStream -acodec libmp3lame -ar 22050 -vcodec mpeg4 -y test.avi
+
+wmav2
+wmv3
+
+mplayer mms://212.113.48.55/o/3135033-20100308163549-600-4876250.wmv -dumpstream -dumpfile output.wmv

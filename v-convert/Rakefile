@@ -1,0 +1,6 @@
+
+task :grab do
+  puts `bin/convert mms://76.10.223.17/streams_d/stb1_s_f97f7bd1db23b9c13d9dd49010ed40d6.wmv`
+end
+
+

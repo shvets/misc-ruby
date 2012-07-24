@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+
+$:.unshift(File::join(File::dirname(File::dirname(__FILE__)), "lib"))
+
+require 'rubygems' unless defined? Gem
+
+require 'executor'
+
+class Convert
+
+  USAGE= <<-TEXT
+    Usage:
+      vconvert url
+  TEXT
+
+  def run
+    if(ARGV.size == 0)
+      puts USAGE and return
+    end
+
+    url = ARGV[0]
+    #`mplayer -dumpstream mms://streaming.server.example.com/stream.wmv -dumpfile stream.wmv`
+
+
+#    `mencoder #{url} -ovc lavc -oac mp3lame -o output.avi -msgcolor -msglevel all=1`
+
+#    command_mencoder = "mencoder #{url} -o output.avi -oac lavc -ovc lavc -lavcopts vcodec=xvid:acodec=mp3"
+#
+
+
+#    `mplayer -dumpstream #{url} -dumpfile stream.wmv -nocache -msgcolor -msglevel all=1`
+#
+#    executor = Executor.new
+#
+#    command_ffmpeg = "ffmpeg -y -i stream.wmv output.avi 2>&1"
+#
+#    executor.execute_ffmpeg2(command_ffmpeg)
+
+   `mencoder #{url} -ovc copy -oac copy -o output.avi -msgcolor -msglevel all=1`
+
+#    case ARGV.shift
+
+#    when /(-v)|(--version)/ then
+#      puts "Version: #{File.open(File::dirname(__FILE__) + "/../VERSION").readlines().first}"
+#    when 'list' then
+#      hash = @translator.supported_languages
+#
+#      print_languages hash[:from_languages], "From Languages:"
+#      print_languages hash[:to_languages], "To Languages:"
+#    when 'detect' then
+#      language = @translator.detect_language(ARGV.shift)
+#
+#      puts "Language: #{language.inspect}"
+#    when /(.*):(.*)/ then
+#      from_text = ARGV.join(' ')
+#      from = $1
+#      to = $2
+#
+#      display(@translator.translate(from.to_sym, to.to_sym, from_text))
+#    when /(.*)/ then
+#      from_text = ARGV.join(' ')
+#
+#      from = @translator.detect_language(from_text)['language']
+#      to = $1
+#
+#      begin
+#        display(@translator.translate(from.to_sym, to.to_sym, from_text))
+#      rescue Exception => e
+#        puts "Error: " + e.message
+#      end
+#    end
+  end
+end
+
+Convert.new.run

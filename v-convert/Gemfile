@@ -1,0 +1,8 @@
+source "http://rubygems.org"
+
+if false
+  `brew install ffmpeg`
+  `brew install mplayer`
+end
+
+gem "ffmpeg-ruby"

@@ -1,0 +1,5 @@
+source :rubygems
+
+`brew install zeromq` unless File.exist? '/usr/local/Cellar/zeromq'
+
+gem "dcell"

@@ -1,0 +1,19 @@
+#flashcontent2
+  %h1="Alternative content"
+  %p
+    %a{:href => "http://www.adobe.com/go/getflashplayer"}
+      %img{:src => "http://www.adobe.com/images/shared/download_buttons/get_flash_player.gif", :alt => "Get Adobe Flash player"}
+
+- height = '400'
+- width = '400'
+- url = 'test.swf'
+- screenshot_url = 'test.swf'
+
+/%embed{:src => "player.swf", :width => width, :height => height, :allowfullscreen => "true", :allowscriptaccess => "always", :flashvars => "&displayheight=#{height}&file=#{url}&image=#{screenshot_url}&width=#{width}&height=#{height}"}
+
+#player
+
+:javascript
+  // flowplayer-3.0.0-rc2.swf
+  //swfobject.embedSWF("player.swf", "player", "400", "300", "9.0.0", null, { config: "{'clip': 'test.swf' }}" });
+  swfobject.embedSWF("test.swf", "flashcontent", "300", "120", "9.0.0", "expressInstall.swf");

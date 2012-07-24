@@ -1,0 +1,41 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    celluloid (0.10.0)
+    celluloid-io (0.10.0)
+      celluloid (~> 0.10.0)
+      nio4r (>= 0.3.1)
+    celluloid-zmq (0.10.0)
+      celluloid (~> 0.10.0)
+      celluloid-io (~> 0.10.0)
+      ffi
+      ffi-rzmq
+    certified (0.1.0)
+    dcell (0.10.0)
+      celluloid (~> 0.10.0)
+      celluloid-zmq (~> 0.10.0)
+      moneta
+      redis
+      redis-namespace
+      reel (~> 0.0.1)
+    ffi (1.0.11)
+    ffi-rzmq (0.9.3)
+      ffi
+    http (0.2.0)
+      certified
+    http_parser.rb (0.5.3)
+    moneta (0.6.0)
+    nio4r (0.3.3)
+    redis (2.2.2)
+    redis-namespace (1.1.0)
+      redis (< 3.0.0)
+    reel (0.0.1)
+      celluloid-io (>= 0.8.0)
+      http (>= 0.2.0)
+      http_parser.rb (>= 0.5.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  dcell

@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <title>mod_h264_streaming FlowPlayer plugin</title>
+</head>
+
+<body bgcolor="#999999" style="width:700px;">
+
+<h1>Flowplayer H264 Pseudo-Streaming Demo</h1>
+<p>This demo shows pseudo-streaming for the newly supported H264 video format.
+You can seek to any position in the video, even before it is fully loaded.</p>
+<p>For more information see the <a href="http://h264.code-shop.com/trac/wiki/FlowPlayer">FlowPlayer</a> wiki page</p>
+
+<script type="text/javascript" src="/javascripts/flowplayer-3.1.4.min.js"></script>
+
+<a style="display:block;width:640px;height:360px" id="player"></a>
+<!-- this will install flowplayer inside previous A- tag. -->
+<script type="text/javascript">
+flowplayer("player", "flowplayer-3.1.5.swf", {
+  clip: {
+    url: 'http://h264.code-shop.com:8080/trailer2.mp4',
+    provider: 'h264streaming'
+  },
+//  log: {
+//    level: 'debug'
+//  },
+  plugins: {
+    h264streaming: {
+      url: 'flowplayer.h264streaming-3.1.5.swf'
+    },
+    controls: {  
+      url: 'flowplayer.controls-3.1.5.swf',  
+ 
+      // which buttons are visible and which not ?  
+      play:false,       
+      fullscreen:true,  
+ 
+     // scrubber is a well known nickname to the timeline/playhead combination  
+      scrubber: true          
+    }               
+  }
+});
+</script>
+
+<p>The h264streaming plugin for Flowplayer is <a href="http://h264.code-shop.com/demo/flowplayer/flowplayer.h264streaming-3.0.5.swf">available</a>. (Right click and Save Link As)</p>
+
+</body>
+</html>
