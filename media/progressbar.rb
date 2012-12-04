@@ -10,7 +10,7 @@
 #
 
 class ProgressBar
-  VERSION = "0.9"
+  VERSION = "0.11.0"
 
   def initialize (title, total, out = STDERR)
     @title = title
@@ -29,13 +29,15 @@ class ProgressBar
     clear
     show
   end
+
   attr_reader   :title
   attr_reader   :current
   attr_reader   :total
   attr_accessor :start_time
   attr_writer   :bar_mark
 
-  private
+private
+
   def fmt_bar
     bar_width = do_percentage * @terminal_width / 100
     sprintf("|%s%s|",
@@ -49,6 +51,10 @@ class ProgressBar
 
   def fmt_stat
     if @finished_p then elapsed else eta end
+  end
+
+  def fmt_stat_for_long_run
+    if @finished_p then elapsed else eta_running_average end
   end
 
   def fmt_stat_for_file_transfer
@@ -89,7 +95,7 @@ class ProgressBar
     sec = t % 60
     min  = (t / 60) % 60
     hour = t / 3600
-    sprintf("%02d:%02d:%02d", hour, min, sec);
+    sprintf("% 3d:%02d:%02d", hour, min, sec);
   end
 
   # ETA stands for Estimated Time of Arrival.
@@ -99,7 +105,35 @@ class ProgressBar
     else
       elapsed = Time.now - @start_time
       eta = elapsed * @total / @current - elapsed;
-      sprintf("ETA:  %s", format_time(eta))
+      sprintf("ETA: %s", format_time(eta))
+    end
+  end
+
+  # Compute ETA with running average (better suited to long running tasks)
+  def eta_running_average
+    now = Time.now
+
+    # update throughput running average
+    if @total > 0 && @eta_previous && @eta_previous_time
+      current_elapsed = @current - @eta_previous
+      alpha = 0.9 ** current_elapsed
+      current_progress = 1.0 * current_elapsed
+      current_throughput = current_progress / (now - @eta_previous_time)
+      if @eta_throughput
+        @eta_throughput = @eta_throughput * alpha + current_throughput * (1-alpha)
+      else
+        @eta_throughput = current_throughput
+      end
+    end
+
+    @eta_previous = @current
+    @eta_previous_time = now
+
+    if @eta_throughput && @eta_throughput > 0
+      eta = (@total - @current) / @eta_throughput;
+      sprintf("ETA: %s", format_time(eta))
+    else
+      "ETA:  --:--:--"
     end
   end
 
@@ -120,21 +154,23 @@ class ProgressBar
     end
   end
 
-  def get_width
-    # FIXME: I don't know how portable it is.
-    default_width = 80
-    begin
-      tiocgwinsz = 0x5413
-      data = [0, 0, 0, 0].pack("SSSS")
-      if @out.ioctl(tiocgwinsz, data) >= 0 then
-        rows, cols, xpixels, ypixels = data.unpack("SSSS")
-        if cols >= 0 then cols else default_width end
-      else
-        default_width
-      end
-    rescue Exception
-      default_width
+  DEFAULT_WIDTH = 80
+  def get_term_width
+    if ENV['COLUMNS'] =~ /^\d+$/
+      ENV['COLUMNS'].to_i
+    elsif (RUBY_PLATFORM =~ /java/ || (!STDIN.tty? && ENV['TERM'])) && shell_command_exists?('tput')
+      `tput cols`.to_i
+    elsif STDIN.tty? && shell_command_exists?('stty')
+      `stty size`.scan(/\d+/).map { |s| s.to_i }[1]
+    else
+      DEFAULT_WIDTH
     end
+  rescue
+    DEFAULT_WIDTH
+  end
+
+  def shell_command_exists?(command)
+    ENV['PATH'].split(File::PATH_SEPARATOR).any?{|d| File.exists? File.join(d, command) }
   end
 
   def show
@@ -144,7 +180,7 @@ class ProgressBar
     }
     line = sprintf(@format, *arguments)
 
-    width = get_width
+    width = get_term_width
     if line.length == width - 1
       @out.print(line + eol)
       @out.flush
@@ -174,10 +210,11 @@ class ProgressBar
     end
   end
 
-  public
+public
+
   def clear
     @out.print "\r"
-    @out.print(" " * (get_width - 1))
+    @out.print(" " * (get_term_width - 1))
     @out.print "\r"
   end
 
@@ -193,6 +230,10 @@ class ProgressBar
 
   def file_transfer_mode
     @format_arguments = [:title, :percentage, :bar, :stat_for_file_transfer]
+  end
+
+  def long_running
+    @format_arguments = [:title, :percentage, :bar, :stat_for_long_run]
   end
 
   def format= (format)
@@ -227,6 +268,7 @@ class ProgressBar
   def inspect
     "#<ProgressBar:#{@current}/#{@total}>"
   end
+
 end
 
 class ReversedProgressBar < ProgressBar
@@ -234,4 +276,3 @@ class ReversedProgressBar < ProgressBar
     100 - super
   end
 end
-

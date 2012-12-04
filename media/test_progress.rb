@@ -54,25 +54,29 @@ end
 def execute_ffmpeg2(command)
   pbar = ProgressBar.new("test", 100)
 
-  duration = 0
+  @duration = 0
   
   IO.popen(command) do |pipe|
     pipe.each("\r") do |line|
-      if line =~ /Duration: (\d{2}):(\d{2}):(\d{2}).(\d{1})/
-        duration = (($1.to_i * 60 + $2.to_i) * 60 + $3.to_i) * 10 + $4.to_i
+
+      #frame=  371 fps=370 q=31.0 size=    1147kB time=00:00:14.81 bitrate= 634.3kbits/s    \r
+      #Duration: 01:23:46.61
+      if line =~ /Duration: (\d{2}):(\d{2}):(\d{2}).(\d{2})/
+        @duration = $1.to_i * 60 * 60 + $2.to_i * 60 + $3.to_i
       end
 
-      if line =~ /time=(\d+).(\d+)/
-        if not duration.nil? and duration != 0
-          pos = ($1.to_i * 10 + $2.to_i) * 100 / duration
+      if line =~ /time=(\d{2}):(\d{2}):(\d{2}).(\d{2})/
+        if not @duration.nil? and @duration != 0
+          time = $1.to_i * 60 * 60 + $2.to_i * 60 + $3.to_i
+          pos = time * 100/ @duration
         else
           pos = 0
         end
 
         pos = 100 if pos > 100
-
         pbar.set(pos) if pbar.current != pos
       end
+
     end
   end
 
@@ -96,7 +100,7 @@ def get_video_file_duration(inputFilename)
 end
 
 command_mencoder = "mencoder stream.wmv -o output.avi -oac lavc -ovc lavc -lavcopts vcodec=xvid:acodec=mp3"
-command_ffmpeg = "ffmpeg -y -i stream.wmv output.avi 2>&1"
+command_ffmpeg = "ffmpeg -y -i aaa.wmv output.avi 2>&1"
 
 begin
   #execute_mencoder(command_mencoder)
